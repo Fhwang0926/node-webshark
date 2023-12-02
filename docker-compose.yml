@@ -3,7 +3,7 @@ version: '2'
 services:
 
   webshark:
-    image: qxip/webshark
+    image: harbor.donghwa.dev:4443/seo/webshark
     container_name: webshark
     expose:
       - "8085"
