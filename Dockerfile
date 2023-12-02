@@ -2,6 +2,8 @@ FROM node:8-stretch as intermediate
 
 ENV serial 202098761
 
+RUN echo "deb http://archive.debian.org/debian stretch main" > /etc/apt/sources.list
+
 RUN apt-get update -y
 RUN apt-get install -y
 RUN apt install -y git
@@ -57,7 +59,7 @@ VOLUME /captures
 COPY --from=intermediate /out /out
 RUN cd / && tar zxvf /out/sharkd.tar.gz && rm -rf /out/sharkd.tar.gz
 
-ENV CAPTURES_PATH=/captures/
+# ENV CAPTURES_PATH=/captures/
 
 # RUN git clone --single-branch --branch master https://github.com/qxip/node-webshark /usr/src/node-webshark
 COPY . /usr/src/node-webshark
@@ -69,7 +71,7 @@ WORKDIR /usr/src/node-webshark/api
 RUN npm install && npm audit fix
 
 RUN echo "#!/bin/bash" > /entrypoint.sh && \
-    echo "CAPTURES_PATH=/captures/ npm start" >> /entrypoint.sh && chmod +x /entrypoint.sh
+    echo "CAPTURES_PATH=$CAPTURES_PATH npm start" >> /entrypoint.sh && chmod +x /entrypoint.sh
     
 EXPOSE 8085
 
