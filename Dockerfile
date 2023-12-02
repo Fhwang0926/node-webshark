@@ -21,9 +21,14 @@ RUN ../node-webshark/sharkd/build.sh
 
 FROM node:10-stretch
 
-RUN apt update \
-    && apt install -y git libglib2.0-0 speex libspeex-dev libc-ares2 \
-    && rm -rf /var/lib/apt/lists/*
+RUN apt update -y
+RUN apt install -y git
+RUN apt install -y libglib2.0-0
+RUN apt install -y speex
+RUN apt install -y libspeex-dev
+RUN apt install -y libc-ares2
+    # && apt install -y git libglib2.0-0 speex libspeex-dev libc-ares2 \
+RUN rm -rf /var/lib/apt/lists/*
 
 RUN mkdir -p /captures
 VOLUME /captures
