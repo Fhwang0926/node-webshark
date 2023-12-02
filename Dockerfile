@@ -31,6 +31,10 @@ RUN ../node-webshark/sharkd/build.sh
 
 FROM node:10-stretch
 
+RUN echo "deb http://security.debian.org/debian-security bullseye-security main contrib non-free" > /etc/apt/sources.list
+
+RUN apt-get update
+
 RUN apt update -y
 RUN apt install -y git
 RUN apt install -y libglib2.0-0
