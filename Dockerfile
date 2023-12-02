@@ -33,6 +33,9 @@ FROM node:10-stretch
 
 # RUN echo "deb http://security.debian.org/debian-security bullseye-security main contrib non-free" > /etc/apt/sources.list
 RUN echo "deb http://archive.debian.org/debian stretch main" > /etc/apt/sources.list
+RUN echo "deb http://security.debian.org/ stretch/updates main contrib non-free" > /etc/apt/sources.list
+RUN sed -i s/security.debian.org/archive.debian.org/g /etc/apt/sources.list
+
 
 
 RUN apt-get update
