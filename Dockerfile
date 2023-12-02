@@ -2,9 +2,19 @@ FROM node:8-stretch as intermediate
 
 ENV serial 202098761
 
-RUN apt-get update && apt-get install -y \
-	git make python3 cmake flex bison libglib2.0-dev libgcrypt20-dev libspeex-dev libc-ares-dev \
-	&& rm -rf /var/lib/apt/lists/*
+RUN apt-get update -y
+RUN apt-get install -y
+RUN apt install -y git
+RUN apt install -y make
+RUN apt install -y python3
+RUN apt install -y cmake
+RUN apt install -y flex
+RUN apt install -y bison
+RUN apt install -y libglib2.0-dev
+RUN apt install -y libgcrypt20-dev
+RUN apt install -y libspeex-dev
+RUN apt install -y libc-ares-dev
+RUN rm -rf /var/lib/apt/lists/*
 
 RUN mkdir -p /out
 RUN mkdir -p /usr/src
