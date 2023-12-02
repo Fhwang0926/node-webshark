@@ -28,6 +28,8 @@ RUN git clone https://github.com/qxip/node-webshark /usr/src/node-webshark
 RUN git clone https://github.com/wireshark/wireshark /usr/src/wireshark
 
 WORKDIR /usr/src/wireshark
+RUN ls -al
+RUN cd ../ && ls -al
 RUN ../node-webshark/sharkd/build.sh
 
 
