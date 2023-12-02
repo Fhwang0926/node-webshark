@@ -10,4 +10,4 @@ services:
     ports:
       - "8085:8085"
     volumes:
-      - ./captures:/captures
+      - ./data/pcap:/data/pcap
