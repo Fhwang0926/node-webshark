@@ -76,7 +76,7 @@ jobs:
  
   apply-if-failed:
     runs-on: ubuntu-latest
-    needs: [ui, docker, deploy]
+    needs: [docker, deploy]
     if: always() && (needs.apply.result == 'failure')
     steps:
       - name: WEBHOOK apply was failed
