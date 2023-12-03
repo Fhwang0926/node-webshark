@@ -16,21 +16,18 @@
 
 		var g_SIZE_LIMIT = 30 * 1024 * 1024; /* 30 MB */
 
-		function form_upload(ev)
-		{
-			var stat  = document.getElementById('status');
+		function form_upload(ev) {
+			var stat = document.getElementById('status');
 			var files = document.getElementById('f').files;
 
-			if (files.length != 1)
-			{
+			if (files.length != 1) {
 				ev.preventDefault();
 				return;
 			}
 
 			var f = files[0];
 
-			if (f.size >= g_SIZE_LIMIT)
-			{
+			if (f.size >= g_SIZE_LIMIT) {
 				stat.innerHTML = 'Limit is ' + g_SIZE_LIMIT + '. Select other file';
 				ev.preventDefault();
 				return;
@@ -40,7 +37,7 @@
 
 			xhr.open('POST', '/webshark/upload', true);
 
-			xhr.upload.addEventListener("progress", function(e) {
+			xhr.upload.addEventListener("progress", function (e) {
 				if (e.lengthComputable) {
 					var percentage = Math.round((e.loaded * 100) / e.total);
 					stat.innerHTML = 'Uploading: ' + f.name + ' ' + percentage + '%';
@@ -51,8 +48,7 @@
 				if (xhr.readyState == 4 && xhr.status === 200) {
 					var file = JSON.parse(xhr.responseText);
 
-					if (file['err'] != undefined)
-					{
+					if (file['err'] != undefined) {
 						stat.innerHTML = 'Uploaded, but not capture file.';
 						return;
 					}
@@ -80,8 +76,7 @@
 			upl.style.display = 'none';
 		}
 
-		function load()
-		{
+		function load() {
 			var upl = document.getElementById('uploader');
 			upl.onsubmit = form_upload;
 
@@ -89,11 +84,9 @@
 				{
 					req: 'info'
 				},
-				function(data)
-				{
+				function (data) {
 					document.title = document.title.replace("${WEBSHARK_VER}", data['version']);
-					if (data['user'])
-					{
+					if (data['user']) {
 						document.getElementById("publicnote").style.display = "none";
 					}
 					document.getElementById("ws_div").style.display = "block";
@@ -103,18 +96,21 @@
 	</script>
 </head>
 
-<body onload="load()"><div id="ws_div" style="display: none;">
-	<h2 id="publicnote">Uploaded files will be public! You need to login for private uploads.</h2>
+<body onload="load()">
+	<div id="ws_div" style="display: none;">
+		<h2 id="publicnote">Uploaded files will be public! You need to login for private uploads.</h2>
 
-	<p id='status'>Select capture file to upload.</p>
+		<p id='status'>Select capture file to upload.</p>
 
-	<form id='uploader' action="/webshark/upload" method="post" enctype="multipart/form-data">
-	    <input id='f' type="file" name="f">
-	    <input type="submit" value="Upload" name="submit">
-	</form>
+		<form id='uploader' action="/webshark/upload" method="post" enctype="multipart/form-data">
+			<input id='f' type="file" name="f">
+			<input type="submit" value="Upload" name="submit">
+		</form>
 
-	<div id="capture_files_view_details">
+		<div id="capture_files_view_details">
+		</div>
+
 	</div>
+</body>
 
-</div></body>
 </html>

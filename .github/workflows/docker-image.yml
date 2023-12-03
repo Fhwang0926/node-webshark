@@ -2,7 +2,7 @@ name: Node.js CI
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [ main, updatae ]
     
 jobs:
   docker:
@@ -48,9 +48,9 @@ jobs:
           password: ${{ secrets.HARBOR_BOT_PW }}
       # start build and push
       - name: Build the tagged Docker image
-        run: docker build . --file Dockerfile --tag ${{ secrets.HARBOR_REGISTRY }}/seo/webshark:latest
+        run: docker build . --file Dockerfile --tag ${{ secrets.HARBOR_REGISTRY }}/seo/webshark_test:latest
       - name: Push the tagged Docker image
-        run: docker push ${{ secrets.HARBOR_REGISTRY }}/seo/webshark:latest
+        run: docker push ${{ secrets.HARBOR_REGISTRY }}/seo/webshark_test:latest
         
   deploy:
     # The type of runner that the job will run on

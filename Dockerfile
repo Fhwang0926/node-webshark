@@ -1,32 +1,3 @@
-FROM node:8-stretch as intermediate
-
-ENV serial 202098761
-
-RUN echo "deb http://archive.debian.org/debian stretch main" > /etc/apt/sources.list
-
-RUN apt-get update -y
-RUN apt-get install -y
-RUN apt install -y git
-RUN apt install -y make
-RUN apt install -y python3
-RUN apt install -y cmake
-RUN apt install -y flex
-RUN apt install -y bison
-RUN apt install -y libglib2.0-dev
-RUN apt install -y libgcrypt20-dev
-RUN apt install -y libspeex-dev
-RUN apt install -y libc-ares-dev
-RUN rm -rf /var/lib/apt/lists/*
-
-RUN mkdir -p /out
-RUN mkdir -p /usr/src
-RUN mkdir -p /var/run
-
-WORKDIR /usr/src
-
-RUN git clone https://github.com/qxip/node-webshark /usr/src/node-webshark
-RUN git clone https://github.com/wireshark/wireshark /usr/src/wireshark
-
 WORKDIR /usr/src/wireshark
 RUN ls -al
 RUN cd ../ && ls -al
@@ -36,13 +7,7 @@ RUN ../node-webshark/sharkd/build.sh
 FROM node:10-stretch
 
 RUN cat /etc/apt/sources.list
-# RUN echo "deb http://security.debian.org/debian-security bullseye-security main contrib non-free" > /etc/apt/sources.list
-# RUN echo "deb http://security.debian.org/ stretch/updates main contrib non-free" > /etc/apt/sources.list
-# RUN echo "deb http://archive.debian.org/debian stretch main" > /etc/apt/sources.list
 RUN echo "deb http://archive.debian.org/debian stretch main" > /etc/apt/sources.list
-# RUN sed -i s/security.debian.org/archive.debian.org/g /etc/apt/sources.list
-
-
 
 RUN apt-get update
 

@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html>
 
@@ -550,12 +551,13 @@ TODO: Give user possible to generate multiple reports by selecting checkboxes
 			<span id="toolbar_capture_description" style="margin-right: 10px;"></span>
 			<span id="user_anon" style="display: none;">
 				Guest
-				<a href="https://console.3vi.co.kr">Login</a>
+				Mode
+				<!-- <a href="/login">Login</a> -->
 			</span>
-			<!-- <span id="user_registered" style="display: none;">
+			<span id="user_registered" style="display: none;">
 				<span id="user_login"></span>
 				<a href="/logout/?next=/webshark">Logout</a>
-			</span> -->
+			</span>
 		</div>
 	</div>
 
@@ -593,7 +595,7 @@ TODO: Give user possible to generate multiple reports by selecting checkboxes
 			<a id="toolbar_capture_down"></a>
 			<input id="display_filter" placeholder="Apply a display filter" type='text' onchange='set_filter(this.value);' style='width: 550px;' />
 
-			<p />
+			<!-- <p> -->
 
 			<ul class="menul">
 			<li>
@@ -616,7 +618,6 @@ TODO: Give user possible to generate multiple reports by selecting checkboxes
 			</li>
 		</ul>
 		</div>
-		<!--
 		<div style="float: right; border: 1px solid grey;">
 			<div id="capture_interval" style="margin-top: 2px;">
 				<svg width="620" height="100"></svg>
@@ -632,7 +633,6 @@ TODO: Give user possible to generate multiple reports by selecting checkboxes
 				<button id="capture_interval_adv" class="wsbutton" style="margin-left: 15px;" onclick="show_hide_graph('report_graph', 'capture_interval_adv')">Advanced Graph</button>
 			</div>
 		</div>
-		-->
 		<div style="clear: both;"></div>
 
 		<div id="report_graph" style="border: 2px solid grey; display: none;">

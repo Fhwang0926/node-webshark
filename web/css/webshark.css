@@ -175,6 +175,7 @@ div.submenu
 	border: 2px solid grey;
 	position: absolute;
 	background-color: #f9f9f9;
+	z-index: 1;
 }
 
 div.submenu li, div.submenu li a
