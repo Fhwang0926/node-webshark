@@ -1,10 +1,13 @@
 'use strict'
 
-const fs = require('fs');
-const fileUpload = require('fastify-file-upload');
-const CAPTURES_PATH = process.env.CAPTURES_PATH || "/captures/";
+import fs from 'fs';
+import fileUpload from 'fastify-file-upload';
+import path from 'path';
 
-module.exports = function (fastify, opts, next) {
+const __dirname = path.resolve();
+const CAPTURES_PATH = process.env.CAPTURES_PATH || `${__dirname.replace('api/', '')}/captures/`;
+
+const main  = function (fastify, opts, next) {
   fastify.register(fileUpload);
   fastify.post('/webshark/upload', function (req, reply) {
     const files = req.raw.files
@@ -32,3 +35,5 @@ module.exports = function (fastify, opts, next) {
 
   next()
 }
+
+export default main

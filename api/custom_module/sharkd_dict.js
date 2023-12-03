@@ -1,11 +1,15 @@
-const {PromiseSocket} = require('promise-socket');
-const { spawn } = require('child_process');
-const fs = require('fs');
+import { PromiseSocket } from 'promise-socket';
+import { spawn } from 'child_process';
+import fs from 'fs';
+import path from 'path';
 
+const __dirname = path.resolve();
+const CAPTURES_PATH = process.env.CAPTURES_PATH || `${__dirname.replace('api/', '')}/captures/`;
 const SHARKD_SOCKET = process.env.SHARKD_SOCKET || "/var/run/sharkd.sock";
-const CAPTURES_PATH = process.env.CAPTURES_PATH || "/captures/";
+
+// const CAPTURES_PATH = process.env.CAPTURES_PATH || "/captures/";
 var sharkd_objects = {};
-var AsyncLock = require('async-lock');
+import AsyncLock from 'async-lock';
 var lock = new AsyncLock({timeout: 300000}); // 5 minutes timeout for the lock
 var sharkd_proc = null;
 const sleep = (waitTimeInMs) => new Promise(resolve => setTimeout(resolve, waitTimeInMs));
@@ -14,7 +18,7 @@ const sleep = (waitTimeInMs) => new Promise(resolve => setTimeout(resolve, waitT
  * Returns array of socket names with loaded pcap file
  * @returns {[string]} Array of existing sharkd sockets with loaded file
  */
-get_loaded_sockets = function() {
+const get_loaded_sockets = function() {
   let return_array = [];
   Object.keys(sharkd_objects).forEach(function(socket_name){
     if (sharkd_objects[socket_name].stream.readable) {
@@ -32,7 +36,7 @@ get_loaded_sockets = function() {
  * @param {string} capture the full path of the pcap file to load
  * @returns {PromiseSocket} sharkd socket with loaded file
  */
-get_sharkd_cli = async function(capture) {
+const get_sharkd_cli = async function(capture) {
   let socket_name = capture.replace(CAPTURES_PATH,"");
   if (socket_name.startsWith("/")) {
     socket_name = socket_name.substr(1);
@@ -69,9 +73,9 @@ get_sharkd_cli = async function(capture) {
           process.exit(1);
         }
       } catch (err_2) {
-        console.log(`Error spawning sharkd under ${SHARKD_SOCKET}`);
-        console.log(err_2);
-        process.exit(1);
+        console.error(`Error spawning sharkd under ${SHARKD_SOCKET}`);
+        console.error(err_2);
+        // process.exit(1);
       }
       return get_sharkd_cli(capture);
     }
@@ -107,7 +111,7 @@ function _str_is_json(str) {
  * @param {PromiseSocket|null} sock optional socket to use for communication
  * @returns {string} data returned from sharkd as string
  */
-send_req = async function(request, sock) {
+const send_req = async function(request, sock) {
   let cap_file = '';
   
   if ("capture" in request) {
@@ -161,6 +165,8 @@ send_req = async function(request, sock) {
   return await lock.acquire(cap_file, _send_req_internal);
 }
 
-exports.get_sharkd_cli = get_sharkd_cli;
-exports.send_req = send_req;
-exports.get_loaded_sockets = get_loaded_sockets;
+export default { get_sharkd_cli, send_req, get_loaded_sockets }
+export { get_sharkd_cli, send_req, get_loaded_sockets }
+// exports.get_sharkd_cli = get_sharkd_cli;
+// exports.send_req = send_req;
+// exports.get_loaded_sockets = get_loaded_sockets;
