@@ -24,14 +24,50 @@ RUN mkdir -p /var/run
 
 WORKDIR /usr/src
 
+# 버전 주의
 RUN git clone https://github.com/qxip/node-webshark /usr/src/node-webshark
+# RUN git clone https://github.com/Fhwang0926/node-webshark /usr/src/node-webshark
+# 버전 주의
 RUN git clone https://github.com/wireshark/wireshark /usr/src/wireshark
 
 WORKDIR /usr/src/wireshark
-RUN ls -al
-RUN cd ../ && ls -al
+# RUN ls -al
+# RUN wget https://github.com/Kitware/CMake/releases/download/v3.18.2/cmake-3.18.2.tar.gz 
+# RUN tar -xvf cmake-3.18.2.tar.gz
+# RUN cd cmake-3.18.2
+# RUN ./bootstrap
+# RUN make
+# RUN make install
+apt install libglib2.0 libglib2.0-dev libgtk-3-dev libgtk-3
+
+RUN echo 1 && wget https://github.com/Kitware/CMake/releases/download/v3.16.3/cmake-3.16.3.tar.gz  \
+&& tar -xvf cmake-3.16.3.tar.gz \
+&& cd cmake-3.16.3 \
+&& ./bootstrap \
+&& make \
+&& make install
+
+RUN cmake --version 
 RUN ../node-webshark/sharkd/build.sh
 
+RUN apt-get install software-properties-common
+RUN add-apt-repository ppa:deadsnakes/ppa
+RUN apt-get install python3.6
+
+wget https://www.python.org/ftp/python/3.8.17/Python-3.8.17.tar.xz
+tar -xf Python-3.8.17.tar.xz 
+./configure --enable-optimizations --enable-shared
+mv Python-3.8.17 /usr/local/share/python3.8
+./configure --enable-optimizations --enable-shared
+make && make -j 5 && make altinstall
+ldconfig /usr/local/share/python3.8
+python3 --version
+
+cd /opt
+wget https://www.python.org/ftp/python/3.8.12/Python-3.8.12.tgz
+tar xzf Python-3.8.12.tgz
+cd Python-3.8.12
+./configure --enable-optimizations
 
 FROM node:10-stretch
 
