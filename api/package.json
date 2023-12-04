@@ -31,6 +31,6 @@
     "promise-socket": "^4.0.1"
   },
   "devDependencies": {
-    "tap": "^12.5.3"
+    "tap": "^18.6.1"
   }
 }
