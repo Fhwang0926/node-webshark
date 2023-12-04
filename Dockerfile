@@ -1,5 +1,5 @@
 FROM node:18
-RUN cat /etc/apt/sources.list
+# RUN cat /etc/apt/sources.list
 RUN echo "deb http://archive.debian.org/debian stretch main" > /etc/apt/sources.list
 
 RUN apt-get update
