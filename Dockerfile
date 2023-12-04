@@ -1,34 +1,25 @@
-WORKDIR /usr/src/wireshark
-RUN ls -al
-RUN cd ../ && ls -al
-RUN ../node-webshark/sharkd/build.sh
-
-
-FROM node:10-stretch
-
+FROM node:18
 RUN cat /etc/apt/sources.list
 RUN echo "deb http://archive.debian.org/debian stretch main" > /etc/apt/sources.list
 
 RUN apt-get update
-
 RUN apt update -y
 RUN apt install -y git
 RUN apt install -y libglib2.0-0
 RUN apt install -y speex
 RUN apt install -y libspeex-dev
 RUN apt install -y libc-ares2
-    # && apt install -y git libglib2.0-0 speex libspeex-dev libc-ares2 \
 RUN rm -rf /var/lib/apt/lists/*
 
 RUN mkdir -p /captures
-VOLUME /captures
+# VOLUME /captures
 
-COPY --from=intermediate /out /out
-RUN cd / && tar zxvf /out/sharkd.tar.gz && rm -rf /out/sharkd.tar.gz
+# COPY --from=intermediate /out /out
 
+# RUN cd / && tar zxvf /out/sharkd.tar.gz && rm -rf /out/sharkd.tar.gz
 # ENV CAPTURES_PATH=/captures/
-
 # RUN git clone --single-branch --branch master https://github.com/qxip/node-webshark /usr/src/node-webshark
+
 COPY . /usr/src/node-webshark
 
 WORKDIR /usr/src/node-webshark
