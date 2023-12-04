@@ -18,7 +18,7 @@ docker-compose up -d
 ```
 #### Run Manually
 ```
-docker run -ti --rm -p 8085:8085 -v $(pwd)/captures:/captures qxip/webshark
+docker run -ti --rm -p 8085:8085 -v /captures:/captures  harbor.donghwa.dev:4443/seo/ webshark_test:latest
 ```
 #### Test
 Browse to your webshark instance, ie: `http://localhost:8085/webshark`

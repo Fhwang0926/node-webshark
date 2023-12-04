@@ -5,7 +5,7 @@ import path from 'path';
 import AsyncLock from 'async-lock';
 
 const __dirname = path.resolve();
-const CAPTURES_PATH = process.env.CAPTURES_PATH || `${__dirname.replace('api/', '')}/captures/`;
+const CAPTURES_PATH = process.env.CAPTURES_PATH || `${__dirname.replace('/api', '')}/captures/`;
 let SHARKD_SOCKET = process.env.SHARKD_SOCKET || "/home/hdh/node-webshark/sharkd.sock";
 
 let sharkd_objects = {};

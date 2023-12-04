@@ -7,7 +7,7 @@ import path from 'path';
 const main = function (fastify, opts, next) {
 
   const __dirname = path.resolve();
-  const CAPTURES_PATH = process.env.CAPTURES_PATH || `${__dirname.replace('api/', '')}/captures/`;
+  const CAPTURES_PATH = process.env.CAPTURES_PATH || `${__dirname.replace('/api', '')}/captures/`;
 
   console.log('__dirname', __dirname, 'CAPTURES_PATH', CAPTURES_PATH)
 

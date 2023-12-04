@@ -6,7 +6,7 @@ import fastify_static from "@fastify/static";
 import path from 'path';
 
 const __dirname = path.resolve();
-const CAPTURES_PATH = process.env.CAPTURES_PATH || `${__dirname.replace('api/', '')}/captures/`;
+const CAPTURES_PATH = process.env.CAPTURES_PATH || `${__dirname.replace('/api', '')}/captures/`;
 
 const main = function (fastify, opts, next) {
   console.log('__dirname', __dirname, 'CAPTURES_PATH', CAPTURES_PATH)

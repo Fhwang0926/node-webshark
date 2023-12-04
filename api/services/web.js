@@ -8,7 +8,7 @@ const main = function (fastify, opts, next) {
   const __dirname = path.resolve();
 
   fastify.register(fastify_static, {
-    root: path.join(__dirname.replace('api/', ''), 'web'),
+    root: path.join(__dirname.replace('/api', ''), 'web'),
     prefix: '/webshark',
     redirect: true
   })
