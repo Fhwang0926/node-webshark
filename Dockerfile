@@ -26,7 +26,7 @@ RUN npm i -g browserify-lite && browserify-lite --standalone webshark ./web/js/w
 
 WORKDIR /usr/src/node-webshark/api
 RUN npm install
-RUN npm audit fix
+# RUN npm audit fix
 
 RUN echo "#!/bin/bash" > /entrypoint.sh && \
     echo "CAPTURES_PATH=$CAPTURES_PATH npm start" >> /entrypoint.sh && chmod +x /entrypoint.sh
