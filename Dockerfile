@@ -10,7 +10,7 @@ RUN apt update -y
 # RUN apt install -y libc-ares2
 # RUN rm -rf /var/lib/apt/lists/*
 
-RUN mkdir -p /captures
+# RUN mkdir -p /captures
 # VOLUME /captures
 
 # COPY --from=intermediate /out /out
@@ -19,7 +19,8 @@ RUN mkdir -p /captures
 # ENV CAPTURES_PATH=/captures/
 # RUN git clone --single-branch --branch master https://github.com/qxip/node-webshark /usr/src/node-webshark
 
-COPY . /usr/src/node-webshark
+RUN ln -s /usr/src/node-webshark/captures /captures
+COPY . /usr/src/node-webshark/captures
 
 WORKDIR /usr/src/node-webshark
 # RUN npm i -g browserify-lite && browserify-lite --standalone webshark ./web/js/webshark.js --outfile web/js/webshark-app.js
