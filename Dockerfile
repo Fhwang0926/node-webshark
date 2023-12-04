@@ -29,8 +29,13 @@ WORKDIR /usr/src/node-webshark/api
 RUN npm install
 RUN npm audit fix
 
+# run sharkd
+ENV SHARKD_SOCKET="/usr/src/node-webshark/sharkd/sharkd.sock"
+RUN chmod 755 /usr/src/node-webshark/sharkd/sharkd
+
 RUN echo "#!/bin/bash" > /entrypoint.sh
 RUN echo "rm \"$SHARKD_SOCKET\"" >> /entrypoint.sh
+RUN echo "exec /usr/src/node-webshark/sharkd/sharkd unix:\"$SHARKD_SOCKET\"" >> /entrypoint.sh
 RUN echo "CAPTURES_PATH=$CAPTURES_PATH npm start" >> /entrypoint.sh
 RUN chmod +x /entrypoint.sh
     
