@@ -30,7 +30,7 @@ RUN npm install
 RUN npm audit fix
 
 RUN echo "#!/bin/bash" > /entrypoint.sh
-RUN echo "rm \"$SHARKD_SOCKET\"" > /entrypoint.sh
+RUN echo "rm \"$SHARKD_SOCKET\"" >> /entrypoint.sh
 RUN echo "CAPTURES_PATH=$CAPTURES_PATH npm start" >> /entrypoint.sh
 RUN chmod +x /entrypoint.sh
     
