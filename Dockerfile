@@ -42,4 +42,4 @@ RUN chmod +x /entrypoint.sh
 EXPOSE 8085
 
 ENTRYPOINT [ "/entrypoint.sh" ]
-CMD [ "npm", "start" ]
+# CMD [ "npm", "start" ]
