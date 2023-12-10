@@ -36,7 +36,7 @@ const get_loaded_sockets = function () {
  * @param {string} capture the full path of the pcap file to load
  * @returns {PromiseSocket} sharkd socket with loaded file
  */
-const get_sharkd_cli = async function (capture) {
+const get_sharkd_cli = async function (capture, reload=true) {
   let socket_name = capture.replace(CAPTURES_PATH, "");
   // let socket_name = capture
   if (socket_name.startsWith("/")) {
@@ -44,14 +44,23 @@ const get_sharkd_cli = async function (capture) {
   }
   if (socket_name in sharkd_objects) { // return existing socket
 
-    sharkd_objects[socket_name].destroy();
-    delete sharkd_objects[socket_name];
+    // daemon not working
+    if (sharkd_objects[socket_name].stream.readable === false) {
+      try {
+        sharkd_objects[socket_name].destroy();
+      } catch (e) { console.log(socket_name, 'destroy failed') }
 
-    // if (sharkd_objects[socket_name].stream.readable === false) {
-    //   sharkd_objects[socket_name].destroy();
-    //   delete sharkd_objects[socket_name];
-    //   // return get_sharkd_cli(capture);
-    // }
+      delete sharkd_objects[socket_name];
+      return get_sharkd_cli(capture);
+    }
+
+    if(reload) {
+      sharkd_objects[socket_name].destroy();
+      delete sharkd_objects[socket_name];
+    } else {
+      return sharkd_objects[socket_name];
+    }
+  
     // return sharkd_objects[socket_name];
   }
   // } else { // no socket for this capture existst, create new one
@@ -119,6 +128,8 @@ function _str_is_json(str) {
  */
 const send_req = async function (request, sock) {
   let cap_file = '';
+  let reload = true
+  if('limit' in request && 'skip' in request) { reload = false }
 
   if ("capture" in request) {
     if (request.capture.includes('..')) {
@@ -142,7 +153,7 @@ const send_req = async function (request, sock) {
   async function _send_req_internal() {
     let new_sock = sock;
     if (typeof (new_sock) === 'undefined') {
-      new_sock = await get_sharkd_cli(cap_file);
+      new_sock = await get_sharkd_cli(cap_file, reload);
     }
 
     if (new_sock === null) {

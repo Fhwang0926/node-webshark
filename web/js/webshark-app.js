@@ -805,7 +805,7 @@ exports.webshark_frame_comment_on_over = webshark_frame_comment_on_over;
 exports.webshark_frame_timeref_on_click = webshark_frame_timeref_on_click;
 exports.webshark_frame_comment_on_click = webshark_frame_comment_on_click;
 
-}, {"./webshark-capture-files.js":1,"./webshark-display-filter.js":3,"./webshark-hexdump.js":4,"./webshark-interval.js":6,"./webshark-iograph.js":7,"./webshark-packet-list.js":2,"./webshark-preferences.js":8,"./webshark-protocol-tree.js":5,"./webshark-symbols.js":10,"./webshark-tap.js":9}],1: [function(require,module,exports,global){
+}, {"./webshark-capture-files.js":1,"./webshark-display-filter.js":2,"./webshark-hexdump.js":5,"./webshark-interval.js":6,"./webshark-iograph.js":7,"./webshark-packet-list.js":3,"./webshark-preferences.js":8,"./webshark-protocol-tree.js":4,"./webshark-symbols.js":10,"./webshark-tap.js":9}],1: [function(require,module,exports,global){
 /* webshark-capture-files.js
  *
  * Copyright (C) 2016 Jakub Zawadzki
@@ -1259,174 +1259,6 @@ exports.WSCaptureFilesTable = WSCaptureFilesTable;
 exports.webshark_create_file_details = webshark_create_file_details;
 
 }, {"./webshark-clusterize.js":11,"./webshark-symbols.js":10}],2: [function(require,module,exports,global){
-/* webshark-packet-list.js
- *
- * Copyright (C) 2016 Jakub Zawadzki
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
- */
-
-var m_webshark_symbols_module = require("./webshark-symbols.js");
-var m_webshark_clusterize_module = require("./webshark-clusterize.js");
-
-var m_COLUMN_DOWNLOADING = 42;
-
-function webshark_create_frame_row_html(frame, row_no)
-{
-	var tr = document.createElement("tr");
-
-	if (!frame)
-	{
-		g_webshark.fetchColumns(row_no, false);
-		return tr;
-	}
-
-	if (frame == m_COLUMN_DOWNLOADING)
-		return tr;
-
-	var cols = frame['c'];
-	var fnum = frame['num'];
-
-	for (var j = 0; j < cols.length; j++)
-	{
-		var td = document.createElement("td");
-
-		if (j == 0)
-		{
-			/* XXX, check if first column is equal to frame number, if so assume it's frame number column, and create link */
-			if (cols[0] == fnum)
-			{
-				var a = document.createElement('a');
-
-				a.appendChild(document.createTextNode(cols[j]))
-
-				a.setAttribute("target", "_blank");
-				a.setAttribute("href", window.webshark.webshark_create_url(
-					{
-						file: g_webshark_file,
-						frame: fnum
-					}));
-				a.addEventListener("click", window.webshark.popup_on_click_a);
-
-				td.appendChild(a);
-			}
-
-			if (frame['ct'])
-			{
-				var a = document.createElement('a');
-
-				var comment_glyph = m_webshark_symbols_module.webshark_glyph_img('comment', 14);
-				comment_glyph.setAttribute('alt', 'Comment');
-				comment_glyph.setAttribute('title', 'Comment');
-
-				a.setAttribute("target", "_blank");
-				a.setAttribute("href", window.webshark.webshark_create_url(
-					{
-						file: g_webshark_file,
-						frame: fnum
-					}));
-				a.addEventListener("click", window.webshark.webshark_frame_comment_on_click);
-				a.addEventListener("mouseover", window.webshark.webshark_frame_comment_on_over);
-
-				a.appendChild(comment_glyph);
-				td.appendChild(a);
-			}
-		}
-		else
-		{
-			td.appendChild(document.createTextNode(cols[j]));
-		}
-
-		tr.appendChild(td);
-	}
-
-	if (frame['bg'])
-		tr.style['background-color'] = '#' + frame['bg'];
-
-	if (frame['fg'])
-		tr.style['color'] = '#' + frame['fg'];
-
-	if (fnum == g_webshark.getCurrentFrameNumber())
-		tr.classList.add('selected');
-
-	tr.id = 'packet-list-frame-' + fnum;
-	tr.data_ws_frame = fnum;
-	tr.addEventListener("click", window.webshark.webshark_load_frame.bind(null, fnum, false));
-
-	return tr;
-}
-
-function WSPacketList(opts)
-{
-	this.headerElem = document.getElementById(opts['headerId']);
-	this.headerFakeElem = document.getElementById(opts['headerFakeId']);
-
-	this.cluster = new m_webshark_clusterize_module.Clusterize({
-		rows: [],
-		rows_in_block: 25,
-		tag: 'tr',
-		scrollId: opts['scrollId'],
-		contentId: opts['contentId']
-	});
-
-	this.cluster.options.callbacks.createHTML = webshark_create_frame_row_html;
-}
-
-WSPacketList.prototype.setColumns = function(cols, widths)
-{
-	/* real header */
-	var tr = document.createElement("tr");
-
-	for (var i = 0; i < cols.length; i++)
-	{
-		var th = document.createElement("th");
-
-		if (widths && widths[i])
-			th.style.width = widths[i] + 'px';
-
-		th.appendChild(document.createTextNode(cols[i]));
-		tr.appendChild(th);
-	}
-
-	this.headerElem.innerHTML = tr.outerHTML;
-
-	/* fake header */
-	var tr = document.createElement("tr");
-	for (var i = 0; i < cols.length; i++)
-	{
-		var th = document.createElement("th");
-
-		if (widths && widths[i])
-			th.style.width = widths[i] + 'px';
-
-		tr.appendChild(th);
-	}
-
-	this.headerFakeElem.innerHTML = tr.outerHTML;
-};
-
-WSPacketList.prototype.setPackets = function(packets)
-{
-	// don't work this.cluster.scroll_elem.scrollTop = 0;
-	this.cluster.setData(packets);
-};
-
-exports.m_COLUMN_DOWNLOADING = m_COLUMN_DOWNLOADING;
-exports.WSPacketList = WSPacketList;
-
-}, {"./webshark-clusterize.js":11,"./webshark-symbols.js":10}],3: [function(require,module,exports,global){
 /* webshark-filter.js
  *
  * Copyright (C) 2016 Jakub Zawadzki
@@ -1654,8 +1486,8 @@ WSDisplayFilter.prototype.setFilter = function(filter)
 
 exports.WSDisplayFilter = WSDisplayFilter;
 
-}, {"./webshark-awesomplete.js":12}],4: [function(require,module,exports,global){
-/* webshark-hexdump.js
+}, {"./webshark-awesomplete.js":12}],3: [function(require,module,exports,global){
+/* webshark-packet-list.js
  *
  * Copyright (C) 2016 Jakub Zawadzki
  *
@@ -1674,191 +1506,155 @@ exports.WSDisplayFilter = WSDisplayFilter;
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-function chtoa(ch)
-{
-	return (ch > 0x1f && ch < 0x7f) ? String.fromCharCode(ch) : '.';
-}
+var m_webshark_symbols_module = require("./webshark-symbols.js");
+var m_webshark_clusterize_module = require("./webshark-clusterize.js");
 
-function ch_escape(ch)
+var m_COLUMN_DOWNLOADING = 42;
+
+function webshark_create_frame_row_html(frame, row_no)
 {
-	switch (ch)
+	var tr = document.createElement("tr");
+
+	if (!frame)
 	{
-		case '&': return '&amp;';
-		case '<': return '&lt;';
-		case '>': return '&gt;';
+		g_webshark.fetchColumns(row_no, false);
+		return tr;
 	}
 
-	return ch;
-}
+	if (frame == m_COLUMN_DOWNLOADING)
+		return tr;
 
-function xtoa(hex, pad)
-{
-	var str = hex.toString(16);
+	var cols = frame['c'];
+	var fnum = frame['num'];
 
-	while (str.length < pad)
-		str = "0" + str;
-
-	return str;
-}
-
-function WSHexdump(opts)
-{
-	this.datas = null;
-	this.active= -1;
-	this.base  = opts['base'];
-
-	this.elem      = document.getElementById(opts['contentId']);
-	this.tabs_elem = document.getElementById(opts['tabsId']);
-
-	this.highlights = [ ];
-	this.tabs_btns = [ ];
-}
-
-WSHexdump.prototype.switch_tab = function(new_active, do_render)
-{
-	var prev_active = this.active;
-	var btn;
-
-	if (prev_active == new_active)
-		return;
-
-	this.active = new_active;
-	if (do_render)
-		this.render_hexdump();
-
-
-	btn = this.tabs_btns[prev_active];
-	if (btn)
-		btn.classList.remove('selected');
-
-	btn = this.tabs_btns[new_active];
-	if (btn)
-		btn.classList.add('selected');
-};
-
-WSHexdump.prototype.create_tabs = function(datas, names)
-{
-	this.datas = datas;
-
-
-	this.tabs_btns = [ ];
-	this.tabs_elem.innerHTML = '';
-
-//	if (names.length <= 1)
-//		return;
-
-	for (var i = 0; i < names.length; i++)
+	for (var j = 0; j < cols.length; j++)
 	{
-		var btn = document.createElement('button');
+		var td = document.createElement("td");
 
-		btn.className = 'wsbutton';
-		if (i == 0)
-			btn.classList.add('selected');
-		btn.appendChild(document.createTextNode(names[i]));
-
-		btn.addEventListener("click", this.switch_tab.bind(this, i, true));
-
-		this.tabs_btns.push(btn);
-		this.tabs_elem.appendChild(btn);
-	}
-};
-
-WSHexdump.prototype.render_hexdump = function()
-{
-	var s, line;
-
-	var pkt = this.datas[this.active];
-
-	var padcount = (this.base == 2) ? 8 : (this.base == 16) ? 2 : 0;
-	var limit = (this.base == 2) ? 8 : (this.base == 16) ? 16 : 0;
-
-	var emptypadded = "  ";
-	while (emptypadded.length < padcount)
-		emptypadded = emptypadded + emptypadded;
-
-	if (limit == 0)
-		return;
-
-	var full_limit = limit;
-
-	s = "";
-	for (var i = 0; i < pkt.length; i += full_limit)
-	{
-		var str_off = "<span class='hexdump_offset'>" + xtoa(i, 4) + " </span>";
-		var str_hex = "";
-		var str_ascii = "";
-
-		var prev_class = "";
-
-		if (i + limit > pkt.length)
-			limit = pkt.length - i;
-
-		for (var j = 0; j < limit; j++)
+		if (j == 0)
 		{
-			var ch = pkt.charCodeAt(i + j);
-
-			var cur_class = "";
-
-			for (var k = 0; k < this.highlights.length; k++)
+			/* XXX, check if first column is equal to frame number, if so assume it's frame number column, and create link */
+			if (cols[0] == fnum)
 			{
-				if (this.highlights[k].tab == this.active && this.highlights[k].start <= (i + j) && (i + j) < this.highlights[k].end)
-				{
-					cur_class = this.highlights[k].style;
-					break;
-				}
+				var a = document.createElement('a');
+
+				a.appendChild(document.createTextNode(cols[j]))
+
+				a.setAttribute("target", "_blank");
+				a.setAttribute("href", window.webshark.webshark_create_url(
+					{
+						file: g_webshark_file,
+						frame: fnum
+					}));
+				a.addEventListener("click", window.webshark.popup_on_click_a);
+
+				td.appendChild(a);
 			}
 
-			if (prev_class != cur_class)
+			if (frame['ct'])
 			{
-				if (prev_class != "")
-				{
-					/* close span for previous class */
-					str_ascii += "</span>";
-					str_hex += "</span>";
-				}
+				var a = document.createElement('a');
 
-				if (cur_class != "")
-				{
-					/* open span for new class */
-					str_hex += "<span class='" + cur_class + "'>";
-					str_ascii += "<span class='" + cur_class + "'>";
-				}
+				var comment_glyph = m_webshark_symbols_module.webshark_glyph_img('comment', 14);
+				comment_glyph.setAttribute('alt', 'Comment');
+				comment_glyph.setAttribute('title', 'Comment');
 
-				prev_class = cur_class;
+				a.setAttribute("target", "_blank");
+				a.setAttribute("href", window.webshark.webshark_create_url(
+					{
+						file: g_webshark_file,
+						frame: fnum
+					}));
+				a.addEventListener("click", window.webshark.webshark_frame_comment_on_click);
+				a.addEventListener("mouseover", window.webshark.webshark_frame_comment_on_over);
+
+				a.appendChild(comment_glyph);
+				td.appendChild(a);
 			}
-
-			str_ascii += ch_escape(chtoa(ch));
-
-			var numpad = ch.toString(this.base);
-			while (numpad.length < padcount)
-				numpad = '0' + numpad;
-
-			str_hex += numpad + " ";
 		}
-
-		if (prev_class != "")
+		else
 		{
-			str_ascii += "</span>";
-			str_hex += "</span>";
+			td.appendChild(document.createTextNode(cols[j]));
 		}
 
-		for (var j = limit; j < full_limit; j++)
-		{
-			str_hex += emptypadded + " ";
-			str_ascii += " ";
-		}
-
-		line = str_off + " " + str_hex + " " + str_ascii + "\n";
-		s += line;
+		tr.appendChild(td);
 	}
 
-	this.elem.innerHTML = s;
+	if (frame['bg'])
+		tr.style['background-color'] = '#' + frame['bg'];
+
+	if (frame['fg'])
+		tr.style['color'] = '#' + frame['fg'];
+
+	if (fnum == g_webshark.getCurrentFrameNumber())
+		tr.classList.add('selected');
+
+	tr.id = 'packet-list-frame-' + fnum;
+	tr.data_ws_frame = fnum;
+	tr.addEventListener("click", window.webshark.webshark_load_frame.bind(null, fnum, false));
+
+	return tr;
+}
+
+function WSPacketList(opts)
+{
+	this.headerElem = document.getElementById(opts['headerId']);
+	this.headerFakeElem = document.getElementById(opts['headerFakeId']);
+
+	this.cluster = new m_webshark_clusterize_module.Clusterize({
+		rows: [],
+		rows_in_block: 25,
+		tag: 'tr',
+		scrollId: opts['scrollId'],
+		contentId: opts['contentId']
+	});
+
+	this.cluster.options.callbacks.createHTML = webshark_create_frame_row_html;
+}
+
+WSPacketList.prototype.setColumns = function(cols, widths)
+{
+	/* real header */
+	var tr = document.createElement("tr");
+
+	for (var i = 0; i < cols.length; i++)
+	{
+		var th = document.createElement("th");
+
+		if (widths && widths[i])
+			th.style.width = widths[i] + 'px';
+
+		th.appendChild(document.createTextNode(cols[i]));
+		tr.appendChild(th);
+	}
+
+	this.headerElem.innerHTML = tr.outerHTML;
+
+	/* fake header */
+	var tr = document.createElement("tr");
+	for (var i = 0; i < cols.length; i++)
+	{
+		var th = document.createElement("th");
+
+		if (widths && widths[i])
+			th.style.width = widths[i] + 'px';
+
+		tr.appendChild(th);
+	}
+
+	this.headerFakeElem.innerHTML = tr.outerHTML;
 };
 
-exports.WSHexdump = WSHexdump;
-exports.xtoa = xtoa;
+WSPacketList.prototype.setPackets = function(packets)
+{
+	// don't work this.cluster.scroll_elem.scrollTop = 0;
+	this.cluster.setData(packets);
+};
 
-}, {}],5: [function(require,module,exports,global){
+exports.m_COLUMN_DOWNLOADING = m_COLUMN_DOWNLOADING;
+exports.WSPacketList = WSPacketList;
+
+}, {"./webshark-clusterize.js":11,"./webshark-symbols.js":10}],4: [function(require,module,exports,global){
 /* webshark-protocol-tree.js
  *
  * Copyright (C) 2016 Jakub Zawadzki
@@ -2101,7 +1897,211 @@ ProtocolTree.prototype.render_tree = function()
 
 exports.ProtocolTree = ProtocolTree;
 
-}, {"./webshark-symbols.js":10}],6: [function(require,module,exports,global){
+}, {"./webshark-symbols.js":10}],5: [function(require,module,exports,global){
+/* webshark-hexdump.js
+ *
+ * Copyright (C) 2016 Jakub Zawadzki
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ */
+
+function chtoa(ch)
+{
+	return (ch > 0x1f && ch < 0x7f) ? String.fromCharCode(ch) : '.';
+}
+
+function ch_escape(ch)
+{
+	switch (ch)
+	{
+		case '&': return '&amp;';
+		case '<': return '&lt;';
+		case '>': return '&gt;';
+	}
+
+	return ch;
+}
+
+function xtoa(hex, pad)
+{
+	var str = hex.toString(16);
+
+	while (str.length < pad)
+		str = "0" + str;
+
+	return str;
+}
+
+function WSHexdump(opts)
+{
+	this.datas = null;
+	this.active= -1;
+	this.base  = opts['base'];
+
+	this.elem      = document.getElementById(opts['contentId']);
+	this.tabs_elem = document.getElementById(opts['tabsId']);
+
+	this.highlights = [ ];
+	this.tabs_btns = [ ];
+}
+
+WSHexdump.prototype.switch_tab = function(new_active, do_render)
+{
+	var prev_active = this.active;
+	var btn;
+
+	if (prev_active == new_active)
+		return;
+
+	this.active = new_active;
+	if (do_render)
+		this.render_hexdump();
+
+
+	btn = this.tabs_btns[prev_active];
+	if (btn)
+		btn.classList.remove('selected');
+
+	btn = this.tabs_btns[new_active];
+	if (btn)
+		btn.classList.add('selected');
+};
+
+WSHexdump.prototype.create_tabs = function(datas, names)
+{
+	this.datas = datas;
+
+
+	this.tabs_btns = [ ];
+	this.tabs_elem.innerHTML = '';
+
+//	if (names.length <= 1)
+//		return;
+
+	for (var i = 0; i < names.length; i++)
+	{
+		var btn = document.createElement('button');
+
+		btn.className = 'wsbutton';
+		if (i == 0)
+			btn.classList.add('selected');
+		btn.appendChild(document.createTextNode(names[i]));
+
+		btn.addEventListener("click", this.switch_tab.bind(this, i, true));
+
+		this.tabs_btns.push(btn);
+		this.tabs_elem.appendChild(btn);
+	}
+};
+
+WSHexdump.prototype.render_hexdump = function()
+{
+	var s, line;
+
+	var pkt = this.datas[this.active];
+
+	var padcount = (this.base == 2) ? 8 : (this.base == 16) ? 2 : 0;
+	var limit = (this.base == 2) ? 8 : (this.base == 16) ? 16 : 0;
+
+	var emptypadded = "  ";
+	while (emptypadded.length < padcount)
+		emptypadded = emptypadded + emptypadded;
+
+	if (limit == 0)
+		return;
+
+	var full_limit = limit;
+
+	s = "";
+	for (var i = 0; i < pkt.length; i += full_limit)
+	{
+		var str_off = "<span class='hexdump_offset'>" + xtoa(i, 4) + " </span>";
+		var str_hex = "";
+		var str_ascii = "";
+
+		var prev_class = "";
+
+		if (i + limit > pkt.length)
+			limit = pkt.length - i;
+
+		for (var j = 0; j < limit; j++)
+		{
+			var ch = pkt.charCodeAt(i + j);
+
+			var cur_class = "";
+
+			for (var k = 0; k < this.highlights.length; k++)
+			{
+				if (this.highlights[k].tab == this.active && this.highlights[k].start <= (i + j) && (i + j) < this.highlights[k].end)
+				{
+					cur_class = this.highlights[k].style;
+					break;
+				}
+			}
+
+			if (prev_class != cur_class)
+			{
+				if (prev_class != "")
+				{
+					/* close span for previous class */
+					str_ascii += "</span>";
+					str_hex += "</span>";
+				}
+
+				if (cur_class != "")
+				{
+					/* open span for new class */
+					str_hex += "<span class='" + cur_class + "'>";
+					str_ascii += "<span class='" + cur_class + "'>";
+				}
+
+				prev_class = cur_class;
+			}
+
+			str_ascii += ch_escape(chtoa(ch));
+
+			var numpad = ch.toString(this.base);
+			while (numpad.length < padcount)
+				numpad = '0' + numpad;
+
+			str_hex += numpad + " ";
+		}
+
+		if (prev_class != "")
+		{
+			str_ascii += "</span>";
+			str_hex += "</span>";
+		}
+
+		for (var j = limit; j < full_limit; j++)
+		{
+			str_hex += emptypadded + " ";
+			str_ascii += " ";
+		}
+
+		line = str_off + " " + str_hex + " " + str_ascii + "\n";
+		s += line;
+	}
+
+	this.elem.innerHTML = s;
+};
+
+exports.WSHexdump = WSHexdump;
+exports.xtoa = xtoa;
+
+}, {}],6: [function(require,module,exports,global){
 /* webshark-interval.js
  *
  * Copyright (C) 2016 Jakub Zawadzki
@@ -2592,7 +2592,7 @@ WSIOGraph.prototype.update = function()
 
 exports.WSIOGraph = WSIOGraph;
 
-}, {"./webshark-display-filter.js":3}],8: [function(require,module,exports,global){
+}, {"./webshark-display-filter.js":2}],8: [function(require,module,exports,global){
 /* webshark-preferences.js
  *
  * Copyright (C) 2016 Jakub Zawadzki
@@ -4051,7 +4051,7 @@ function webshark_load_tap(taps)
 
 exports.webshark_load_tap = webshark_load_tap;
 
-}, {"./webshark-hexdump.js":4,"./webshark-rtp-player.js":13,"./webshark-symbols.js":10,"./webshark-tap-flow.js":14}],10: [function(require,module,exports,global){
+}, {"./webshark-hexdump.js":5,"./webshark-rtp-player.js":13,"./webshark-symbols.js":10,"./webshark-tap-flow.js":14}],10: [function(require,module,exports,global){
 /* webshark-symbols.js
  *
  * Copyright (C) 2016 Jakub Zawadzki
