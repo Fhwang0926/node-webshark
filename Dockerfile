@@ -28,7 +28,7 @@ RUN mkdir -p /usr/src/node-webshark/captures
 WORKDIR /usr/src/node-webshark/api
 RUN npm install
 RUN npm audit fix
-RUN npm i -g browserify-lite && browserify-lite --standalone webshark ./web/js/webshark.js --outfile web/js/webshark-app.js
+# RUN npm i -g browserify-lite && browserify-lite --standalone webshark ../web/js/webshark.js --outfile ../web/js/webshark-app.js
 
 # run sharkd
 ENV SHARKD_SOCKET="/usr/src/node-webshark/sharkd/sharkd.sock"
