@@ -205,10 +205,17 @@ WSCaptureFilesTable.prototype._onRowClickHTML = function(click_tr, file)
 		return;
 	}
 
-	file['url'] = window.webshark.webshark_create_url(
-		{
-			file: file['_path']
-		});
+	console.log('file', file)
+
+	let is_dir = (file.status && file.status.directory) || file.cdir || file.pdir
+
+	if(is_dir) {
+		file['url'] = window.webshark.webshark_create_url({ dir: file['_path'] });
+		location.href = file['url']
+		return;
+	}
+
+	file['url'] = window.webshark.webshark_create_url({ file: file['_path'] });
 
 	if (this.fileDetails != null)
 	{
@@ -362,6 +369,8 @@ WSCaptureFilesTable.prototype.loadFiles = function(dir)
 			var fullpwd;
 			var files = data['files'];
 
+			console.log('data', data)
+
 			if (pwd == '.' || pwd == '/')
 			{
 				pwd = '/';
@@ -369,7 +378,7 @@ WSCaptureFilesTable.prototype.loadFiles = function(dir)
 			}
 			else
 			{
-				pwd = '/' + pwd;
+				// pwd = '/' + pwd;
 				fullpwd = pwd + '/';
 			}
 
@@ -388,34 +397,44 @@ WSCaptureFilesTable.prototype.loadFiles = function(dir)
 				/* first directory */
 				ona = (a['dir'] == true) ? 1 : 0;
 				onb = (b['dir'] == true) ? 1 : 0;
-				if (ona != onb)
+				if (ona != onb) {
 					return ona < onb ? 1 : -1;
+				}
 
 				/* than online */
 				ona = (sta && sta['online'] == true) ? 1 : 0;
 				onb = (stb && stb['online'] == true) ? 1 : 0;
-				if (ona != onb)
+				if (ona != onb) {
 					return ona < onb ? 1 : -1;
+				}
+					
 
 				/* and than by filename */
 				return a['name'] > b['name'] ? 1 : -1;
 			});
 
 			/* some extra directories always on top */
-			files.unshift({ cdir: true, pdir: true, name: fullpwd, _path: fullpwd, 'dir': true, 'desc': '' });
+			// console.log('pwd', pwd)
+			if(fullpwd != `${pwd}/`) {
+				files.unshift({ cdir: true, pdir: true, name: fullpwd, _path: fullpwd, 'dir': true, 'desc': '' });
+			}
+			// console.log({ cdir: true, pdir: true, name: fullpwd, _path: fullpwd, 'dir': true, 'desc': '' })
 
 			while (pwd != '/' && pwd != '')
 			{
 				var parentdir = pwd.substring(0, pwd.lastIndexOf('/'));
 
-				if (parentdir.length != 0)
+				if (parentdir.length != 0) {
 					files.unshift({ pdir: true, name: parentdir, _path: parentdir, 'dir': true, 'desc': '' });
+				}
 
 				pwd = parentdir;
 			}
 
-			if (fullpwd != '/')
+			if (fullpwd != '/') {
 				files.unshift({ pdir: true, name: '/', _path: '/', 'dir': true, 'desc': '' });
+			}
+				
 
 			that.files = files;
 			that.updateDisplay();

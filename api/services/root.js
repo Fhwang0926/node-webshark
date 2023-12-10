@@ -22,9 +22,9 @@ const main = function (fastify, opts, next) {
 
     if (request.query.req === "files") {
       
-      let dir = `${CAPTURES_PATH}/${request.query.dir ? request.query.dir : ''}`
+      let dir = `${CAPTURES_PATH}${request.query.dir ? `${request.query.dir.slice(1, request.query.dir.length)}/` : ''}`
       let files = fs.readdirSync(dir);
-      let results = { files: [], pwd: "." };
+      let results = { files: [], pwd: request.query.dir ? request.query.dir : '.' };
       let loaded_files = sharkd_dict.get_loaded_sockets();
 
       files.forEach(async function (pcap_file) {
@@ -42,7 +42,7 @@ const main = function (fastify, opts, next) {
               pcap_file = filename;
             }
             
-            let pcap_stats = fs.statSync(CAPTURES_PATH + pcap_file);
+            let pcap_stats = fs.statSync(dir + pcap_file);
             if (loaded_files.includes(pcap_file)) {
               results.files.push({
                 name: pcap_file,

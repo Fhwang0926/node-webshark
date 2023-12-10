@@ -38,6 +38,7 @@ const get_loaded_sockets = function () {
  */
 const get_sharkd_cli = async function (capture) {
   let socket_name = capture.replace(CAPTURES_PATH, "");
+  // let socket_name = capture
   if (socket_name.startsWith("/")) {
     socket_name = socket_name.substr(1);
   }
@@ -125,7 +126,7 @@ const send_req = async function (request, sock) {
       req_capture = req_capture.substr(1);
     }
 
-    cap_file = `${CAPTURES_PATH}${request.capture}`;
+    cap_file = `${CAPTURES_PATH}${req_capture}`;
 
     // verify that pcap exists
     if (fs.existsSync(cap_file) === false) {
@@ -143,6 +144,7 @@ const send_req = async function (request, sock) {
       return JSON.stringify({ "err": 1, "errstr": `cannot connect to sharkd using socket: ${SHARKD_SOCKET}` });
     }
     try {
+      if('capture' in request) { request.capture = cap_file.replace(CAPTURES_PATH, "") }
       await new_sock.write(JSON.stringify(request) + "\n");
     } catch (err) {
       console.log("Error writing to sharkd socket")
