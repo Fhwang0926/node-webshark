@@ -11,7 +11,7 @@ const main = function (fastify, opts, next) {
 
   console.log('__dirname', __dirname, 'CAPTURES_PATH', CAPTURES_PATH)
 
-  fastify.register(fileUpload);
+  fastify.register(fileUpload, { limits: { fileSize: 50 * 1024 * 1024 }, });
 
   fastify.post('/webshark/upload', function (req, reply) {
 

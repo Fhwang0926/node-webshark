@@ -43,13 +43,18 @@ const get_sharkd_cli = async function (capture) {
     socket_name = socket_name.substr(1);
   }
   if (socket_name in sharkd_objects) { // return existing socket
-    if (sharkd_objects[socket_name].stream.readable === false) {
-      sharkd_objects[socket_name].destroy();
-      delete sharkd_objects[socket_name];
-      return get_sharkd_cli(capture);
-    }
-    return sharkd_objects[socket_name];
-  } else { // no socket for this capture existst, create new one
+
+    sharkd_objects[socket_name].destroy();
+    delete sharkd_objects[socket_name];
+
+    // if (sharkd_objects[socket_name].stream.readable === false) {
+    //   sharkd_objects[socket_name].destroy();
+    //   delete sharkd_objects[socket_name];
+    //   // return get_sharkd_cli(capture);
+    // }
+    // return sharkd_objects[socket_name];
+  }
+  // } else { // no socket for this capture existst, create new one
     let new_socket = new PromiseSocket();
     new_socket.setTimeout(300000); // 5 minutes timeout per socket connection
     new_socket.stream.setEncoding('utf8');
@@ -88,7 +93,7 @@ const get_sharkd_cli = async function (capture) {
     } else {
       return sharkd_objects[socket_name];
     }
-  }
+  // }
 }
 
 /**
