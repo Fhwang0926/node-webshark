@@ -1,5 +1,7 @@
 <img src=https://user-images.githubusercontent.com/1423657/58752485-dd646c00-84af-11e9-94e9-c18529103638.png width=220>
 
+[![Node.js CI](https://github.com/Fhwang0926/node-webshark/actions/workflows/docker-image.yml/badge.svg?branch=dev)](https://github.com/Fhwang0926/node-webshark/actions/workflows/docker-image.yml)
+
 # node-webshark
 
 **webShark** is a *Wireshark-like* web user interface powered by [sharkd](https://wiki.wireshark.org/Development/sharkd) and featuring all its dissectors.
