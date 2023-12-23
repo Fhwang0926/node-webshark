@@ -233,3 +233,7 @@ line.seq_line
 .c3-area {
 	opacity: 1 !important;
 }
+
+tr {
+	cursor: pointer;
+}

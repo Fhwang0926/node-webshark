@@ -12,10 +12,15 @@
 	<link rel="stylesheet" href="css/webshark.css" type="text/css">
 	<link rel="stylesheet" href="css/awesomplete.css" type="text/css">
 
+	<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.43/moment-timezone.min.js" integrity="sha512-zuzzWeyumYqCTSj5EI9sTM3dqjqS+Y+KNKuKZSDoa+N6Ecv3EB1RlROnwrlkeaIvzds5d/J/iUCzUDhji2FjYw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script> -->
+	
+	<script src="js/moment.min.js" type="text/javascript"></script>
+	<!-- <script src="js/moment-timezone-with-data-10-year-range.min.js" type="text/javascript"></script> -->
+
 	<script src="js/d3.v4.min.js" type="text/javascript"></script>
 	<script src="js/wavesurfer.min.js" type="text/javascript"></script>
 
-	<link rel="stylesheet" href="css/c3.min.css" type="text/css"></link>
+	<link rel="stylesheet" href="css/c3.min.css" type="text/css">
 	<script src="js/c3.min.js" type="text/javascript"></script>
 
 	<script src="js/webshark-app.js" type="text/javascript"></script>
@@ -51,9 +56,12 @@
 		{
 			columns_width:
 			{
-				'%m': 1.7 * 59,
-				'%t': 1.7 * 94,
-				'%s': 1.7 * 154,
+				'%m': 1.7 * 50,
+				// '%m': 1.7 * 59,
+				// '%t': 1.7 * 94,
+				'%t': 1.7 * 110,
+				//'%s': 1.7 * 154,
+				'%s': 1.7 * 110,
 				'%d': 1.7 * 154,
 				'%p': 1.7 * 56,
 				'%L': 1.7 * 48,
@@ -65,7 +73,7 @@
 				{ "No.":          "%m" },
 				{ "Time":         "%t" },
 				{ "Source":       "%s" },
-				{ "Destination":  "%d" },
+				{ "Destination":  "%s" },
 				{ "Protocol":     "%p" },
 				{ "Length":       "%L" },
 				{ "Info":         "%i" },

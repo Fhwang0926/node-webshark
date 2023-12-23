@@ -116,6 +116,16 @@ const main = function (fastify, opts, next) {
       reply.send(null);
     } else {
       sharkd_dict.send_req(request.query).then((data) => {
+        if('frames' == request.query.req) {
+          let file = fs.statSync(`${CAPTURES_PATH}${request.query.capture}`);
+          let body = JSON.parse(data)
+
+          body.forEach(r => {
+            r.created_at = file.ctimeMs
+          });
+          // body.created_at = file.ctimeMs
+          return reply.send(JSON.stringify(body));
+        }
         reply.send(data);
       });
     }
