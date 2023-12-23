@@ -35,14 +35,15 @@ function webshark_create_frame_row_html(frame, row_no)
 	if (frame == m_COLUMN_DOWNLOADING)
 		return tr;
 
-	var cols = frame['c'];
-	var fnum = frame['num'];
-
+	let cols = frame['c'];
+	let fnum = frame['num'];
 	let ts = (Number(cols[1]) * 1000).toFixed(3)
 
-	// console.log('cols', ts, frame['created_at'] + Number(ts))
-	// console.log(moment(frame['created_at'] + Number(ts)).format('HH:mm:ss.SSS'))
-	cols[1] = moment(frame['created_at'] + Number(ts)).format('MM-DD HH:mm:ss.SSS')
+	if(!isNaN(cols[1])) {
+		// console.log(moment(frame['created_at'] + Number(ts)).format('YYYY-MM-DD HH:mm:ss.SSS'))
+		cols[1] = moment(frame['created_at'] + Number(ts)).format('YYYY-MM-DD HH:mm:ss.SSS')
+	}
+	
 
 	for (var j = 0; j < cols.length; j++)
 	{

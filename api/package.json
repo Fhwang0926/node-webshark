@@ -28,6 +28,7 @@
     "fastify-file-upload": "^4.0.0",
     "fastify-plugin": "^4.5.1",
     "fastify-static": "^4.7.0",
+    "moment-timezone": "^0.5.43",
     "node-fetch": "^3.3.2",
     "promise-socket": "^4.0.1"
   },

@@ -315,8 +315,11 @@ WSCaptureFilesTable.prototype._createFileRowHTML = function(file, row_no)
 
 		if (j == 0)
 			td.appendChild(a_href);
-		else
+		else {
 			td.appendChild(document.createTextNode(data[j]));
+			console.log('data[j]', data[j])
+		}
+			
 		tr.appendChild(td);
 	}
 

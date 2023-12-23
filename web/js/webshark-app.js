@@ -805,7 +805,7 @@ exports.webshark_frame_comment_on_over = webshark_frame_comment_on_over;
 exports.webshark_frame_timeref_on_click = webshark_frame_timeref_on_click;
 exports.webshark_frame_comment_on_click = webshark_frame_comment_on_click;
 
-}, {"./webshark-capture-files.js":1,"./webshark-display-filter.js":2,"./webshark-hexdump.js":5,"./webshark-interval.js":6,"./webshark-iograph.js":7,"./webshark-packet-list.js":3,"./webshark-preferences.js":8,"./webshark-protocol-tree.js":4,"./webshark-symbols.js":10,"./webshark-tap.js":9}],1: [function(require,module,exports,global){
+}, {"./webshark-capture-files.js":1,"./webshark-display-filter.js":3,"./webshark-hexdump.js":6,"./webshark-interval.js":5,"./webshark-iograph.js":7,"./webshark-packet-list.js":2,"./webshark-preferences.js":8,"./webshark-protocol-tree.js":4,"./webshark-symbols.js":10,"./webshark-tap.js":9}],1: [function(require,module,exports,global){
 /* webshark-capture-files.js
  *
  * Copyright (C) 2016 Jakub Zawadzki
@@ -1123,8 +1123,11 @@ WSCaptureFilesTable.prototype._createFileRowHTML = function(file, row_no)
 
 		if (j == 0)
 			td.appendChild(a_href);
-		else
+		else {
 			td.appendChild(document.createTextNode(data[j]));
+			console.log('data[j]', data[j])
+		}
+			
 		tr.appendChild(td);
 	}
 
@@ -1259,6 +1262,181 @@ exports.WSCaptureFilesTable = WSCaptureFilesTable;
 exports.webshark_create_file_details = webshark_create_file_details;
 
 }, {"./webshark-clusterize.js":11,"./webshark-symbols.js":10}],2: [function(require,module,exports,global){
+/* webshark-packet-list.js
+ *
+ * Copyright (C) 2016 Jakub Zawadzki
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ */
+
+var m_webshark_symbols_module = require("./webshark-symbols.js");
+var m_webshark_clusterize_module = require("./webshark-clusterize.js");
+
+var m_COLUMN_DOWNLOADING = 42;
+
+function webshark_create_frame_row_html(frame, row_no)
+{
+	var tr = document.createElement("tr");
+
+	if (!frame)
+	{
+		g_webshark.fetchColumns(row_no, false);
+		return tr;
+	}
+
+	if (frame == m_COLUMN_DOWNLOADING)
+		return tr;
+
+	let cols = frame['c'];
+	let fnum = frame['num'];
+	let ts = (Number(cols[1]) * 1000).toFixed(3)
+
+	if(!isNaN(cols[1])) {
+		// console.log(moment(frame['created_at'] + Number(ts)).format('YYYY-MM-DD HH:mm:ss.SSS'))
+		cols[1] = moment(frame['created_at'] + Number(ts)).format('YYYY-MM-DD HH:mm:ss.SSS')
+	}
+	
+
+	for (var j = 0; j < cols.length; j++)
+	{
+		var td = document.createElement("td");
+
+		if (j == 0)
+		{
+			/* XXX, check if first column is equal to frame number, if so assume it's frame number column, and create link */
+			if (cols[0] == fnum)
+			{
+				var a = document.createElement('a');
+
+				a.appendChild(document.createTextNode(cols[j]))
+
+				a.setAttribute("target", "_blank");
+				a.setAttribute("href", window.webshark.webshark_create_url(
+					{
+						file: g_webshark_file,
+						frame: fnum
+					}));
+				a.addEventListener("click", window.webshark.popup_on_click_a);
+
+				td.appendChild(a);
+			}
+
+			if (frame['ct'])
+			{
+				var a = document.createElement('a');
+
+				var comment_glyph = m_webshark_symbols_module.webshark_glyph_img('comment', 14);
+				comment_glyph.setAttribute('alt', 'Comment');
+				comment_glyph.setAttribute('title', 'Comment');
+
+				a.setAttribute("target", "_blank");
+				a.setAttribute("href", window.webshark.webshark_create_url(
+					{
+						file: g_webshark_file,
+						frame: fnum
+					}));
+				a.addEventListener("click", window.webshark.webshark_frame_comment_on_click);
+				a.addEventListener("mouseover", window.webshark.webshark_frame_comment_on_over);
+
+				a.appendChild(comment_glyph);
+				td.appendChild(a);
+			}
+		}
+		else
+		{
+			td.appendChild(document.createTextNode(cols[j]));
+		}
+
+		tr.appendChild(td);
+	}
+
+	if (frame['bg'])
+		tr.style['background-color'] = '#' + frame['bg'];
+
+	if (frame['fg'])
+		tr.style['color'] = '#' + frame['fg'];
+
+	if (fnum == g_webshark.getCurrentFrameNumber())
+		tr.classList.add('selected');
+
+	tr.id = 'packet-list-frame-' + fnum;
+	tr.data_ws_frame = fnum;
+	tr.addEventListener("click", window.webshark.webshark_load_frame.bind(null, fnum, false));
+
+	return tr;
+}
+
+function WSPacketList(opts)
+{
+	this.headerElem = document.getElementById(opts['headerId']);
+	this.headerFakeElem = document.getElementById(opts['headerFakeId']);
+
+	this.cluster = new m_webshark_clusterize_module.Clusterize({
+		rows: [],
+		rows_in_block: 25,
+		tag: 'tr',
+		scrollId: opts['scrollId'],
+		contentId: opts['contentId']
+	});
+
+	this.cluster.options.callbacks.createHTML = webshark_create_frame_row_html;
+}
+
+WSPacketList.prototype.setColumns = function(cols, widths)
+{
+	/* real header */
+	var tr = document.createElement("tr");
+
+	for (var i = 0; i < cols.length; i++)
+	{
+		var th = document.createElement("th");
+
+		if (widths && widths[i])
+			th.style.width = widths[i] + 'px';
+
+		th.appendChild(document.createTextNode(cols[i]));
+		tr.appendChild(th);
+	}
+
+	this.headerElem.innerHTML = tr.outerHTML;
+
+	/* fake header */
+	var tr = document.createElement("tr");
+	for (var i = 0; i < cols.length; i++)
+	{
+		var th = document.createElement("th");
+
+		if (widths && widths[i])
+			th.style.width = widths[i] + 'px';
+
+		tr.appendChild(th);
+	}
+
+	this.headerFakeElem.innerHTML = tr.outerHTML;
+};
+
+WSPacketList.prototype.setPackets = function(packets)
+{
+	// don't work this.cluster.scroll_elem.scrollTop = 0;
+	this.cluster.setData(packets);
+};
+
+exports.m_COLUMN_DOWNLOADING = m_COLUMN_DOWNLOADING;
+exports.WSPacketList = WSPacketList;
+
+}, {"./webshark-clusterize.js":11,"./webshark-symbols.js":10}],3: [function(require,module,exports,global){
 /* webshark-filter.js
  *
  * Copyright (C) 2016 Jakub Zawadzki
@@ -1486,181 +1664,7 @@ WSDisplayFilter.prototype.setFilter = function(filter)
 
 exports.WSDisplayFilter = WSDisplayFilter;
 
-}, {"./webshark-awesomplete.js":12}],3: [function(require,module,exports,global){
-/* webshark-packet-list.js
- *
- * Copyright (C) 2016 Jakub Zawadzki
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
- */
-
-var m_webshark_symbols_module = require("./webshark-symbols.js");
-var m_webshark_clusterize_module = require("./webshark-clusterize.js");
-
-var m_COLUMN_DOWNLOADING = 42;
-
-function webshark_create_frame_row_html(frame, row_no)
-{
-	var tr = document.createElement("tr");
-
-	if (!frame)
-	{
-		g_webshark.fetchColumns(row_no, false);
-		return tr;
-	}
-
-	if (frame == m_COLUMN_DOWNLOADING)
-		return tr;
-
-	var cols = frame['c'];
-	var fnum = frame['num'];
-
-	let ts = (Number(cols[1]) * 1000).toFixed(3)
-
-	// console.log('cols', ts, frame['created_at'] + Number(ts))
-	// console.log(moment(frame['created_at'] + Number(ts)).format('HH:mm:ss.SSS'))
-	cols[1] = moment(frame['created_at'] + Number(ts)).format('MM-DD HH:mm:ss.SSS')
-
-	for (var j = 0; j < cols.length; j++)
-	{
-		var td = document.createElement("td");
-
-		if (j == 0)
-		{
-			/* XXX, check if first column is equal to frame number, if so assume it's frame number column, and create link */
-			if (cols[0] == fnum)
-			{
-				var a = document.createElement('a');
-
-				a.appendChild(document.createTextNode(cols[j]))
-
-				a.setAttribute("target", "_blank");
-				a.setAttribute("href", window.webshark.webshark_create_url(
-					{
-						file: g_webshark_file,
-						frame: fnum
-					}));
-				a.addEventListener("click", window.webshark.popup_on_click_a);
-
-				td.appendChild(a);
-			}
-
-			if (frame['ct'])
-			{
-				var a = document.createElement('a');
-
-				var comment_glyph = m_webshark_symbols_module.webshark_glyph_img('comment', 14);
-				comment_glyph.setAttribute('alt', 'Comment');
-				comment_glyph.setAttribute('title', 'Comment');
-
-				a.setAttribute("target", "_blank");
-				a.setAttribute("href", window.webshark.webshark_create_url(
-					{
-						file: g_webshark_file,
-						frame: fnum
-					}));
-				a.addEventListener("click", window.webshark.webshark_frame_comment_on_click);
-				a.addEventListener("mouseover", window.webshark.webshark_frame_comment_on_over);
-
-				a.appendChild(comment_glyph);
-				td.appendChild(a);
-			}
-		}
-		else
-		{
-			td.appendChild(document.createTextNode(cols[j]));
-		}
-
-		tr.appendChild(td);
-	}
-
-	if (frame['bg'])
-		tr.style['background-color'] = '#' + frame['bg'];
-
-	if (frame['fg'])
-		tr.style['color'] = '#' + frame['fg'];
-
-	if (fnum == g_webshark.getCurrentFrameNumber())
-		tr.classList.add('selected');
-
-	tr.id = 'packet-list-frame-' + fnum;
-	tr.data_ws_frame = fnum;
-	tr.addEventListener("click", window.webshark.webshark_load_frame.bind(null, fnum, false));
-
-	return tr;
-}
-
-function WSPacketList(opts)
-{
-	this.headerElem = document.getElementById(opts['headerId']);
-	this.headerFakeElem = document.getElementById(opts['headerFakeId']);
-
-	this.cluster = new m_webshark_clusterize_module.Clusterize({
-		rows: [],
-		rows_in_block: 25,
-		tag: 'tr',
-		scrollId: opts['scrollId'],
-		contentId: opts['contentId']
-	});
-
-	this.cluster.options.callbacks.createHTML = webshark_create_frame_row_html;
-}
-
-WSPacketList.prototype.setColumns = function(cols, widths)
-{
-	/* real header */
-	var tr = document.createElement("tr");
-
-	for (var i = 0; i < cols.length; i++)
-	{
-		var th = document.createElement("th");
-
-		if (widths && widths[i])
-			th.style.width = widths[i] + 'px';
-
-		th.appendChild(document.createTextNode(cols[i]));
-		tr.appendChild(th);
-	}
-
-	this.headerElem.innerHTML = tr.outerHTML;
-
-	/* fake header */
-	var tr = document.createElement("tr");
-	for (var i = 0; i < cols.length; i++)
-	{
-		var th = document.createElement("th");
-
-		if (widths && widths[i])
-			th.style.width = widths[i] + 'px';
-
-		tr.appendChild(th);
-	}
-
-	this.headerFakeElem.innerHTML = tr.outerHTML;
-};
-
-WSPacketList.prototype.setPackets = function(packets)
-{
-	// don't work this.cluster.scroll_elem.scrollTop = 0;
-	this.cluster.setData(packets);
-};
-
-exports.m_COLUMN_DOWNLOADING = m_COLUMN_DOWNLOADING;
-exports.WSPacketList = WSPacketList;
-
-}, {"./webshark-clusterize.js":11,"./webshark-symbols.js":10}],4: [function(require,module,exports,global){
+}, {"./webshark-awesomplete.js":12}],4: [function(require,module,exports,global){
 /* webshark-protocol-tree.js
  *
  * Copyright (C) 2016 Jakub Zawadzki
@@ -1904,6 +1908,185 @@ ProtocolTree.prototype.render_tree = function()
 exports.ProtocolTree = ProtocolTree;
 
 }, {"./webshark-symbols.js":10}],5: [function(require,module,exports,global){
+/* webshark-interval.js
+ *
+ * Copyright (C) 2016 Jakub Zawadzki
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ */
+
+function WSInterval(opts)
+{
+	this.mode = opts['mode'];
+	this.interval_count = opts['width'];
+
+	this.elem = document.getElementById(opts['contentId']);
+	this.descr_elem = document.getElementById(opts['descrId']);
+
+	this.interval = null;
+	this.interval_filter = null;
+	this.scale = 1;
+}
+
+WSInterval.prototype.setDuration = function(duration)
+{
+	var scale;
+
+	scale = Math.round(duration / this.interval_count);
+	if (scale < 1)
+		scale = 1;
+
+	this.scale = scale;
+};
+
+WSInterval.prototype.setResult = function(filter, data)
+{
+	if (filter)
+	{
+		this.interval_filter = data;
+	}
+	else
+	{
+		this.interval = data;
+		this.interval_filter = null; /* render only main */
+	}
+
+	this.render_interval();
+};
+
+WSInterval.prototype.getScale = function()
+{
+	return this.scale;
+};
+
+WSInterval.prototype.render_interval = function()
+{
+	var intervals_data   = this.interval ? this.interval['intervals'] : null;
+	var intervals_filter = this.interval_filter ? this.interval_filter['intervals'] : null;
+	var intervals_full = [ ];
+
+	var last_one  = this.interval ? this.interval['last'] : this.interval_filter['last'];
+	var color_dict = { whole: 'steelblue' };
+	var max_value_hack = 10; /* XXX, workaround, to not display mili's */
+
+	var count_idx =
+		(this.mode == "bps") ? 2 :
+		(this.mode == "fps") ? 1 :
+		-1;
+
+	if (count_idx == -1)
+		return;
+
+	for (var i = 0; i <= last_one; i++)
+		intervals_full[i] = [ (i * this.scale), 0, 0 ];
+
+	if (intervals_data)
+	{
+		for (var i = 0; i < intervals_data.length; i++)
+		{
+			var idx = intervals_data[i][0];
+			intervals_full[idx][1] += intervals_data[i][count_idx];
+			if (intervals_full[idx][1] > 10) max_value_hack = undefined;
+		}
+	}
+
+	if (intervals_filter)
+	{
+		for (var i = 0; i < intervals_filter.length; i++)
+		{
+			var idx = intervals_filter[i][0];
+			intervals_full[idx][2] += intervals_filter[i][count_idx];
+			if (intervals_full[idx][2] > 10) max_value_hack = undefined;
+		}
+	}
+
+
+	if (intervals_filter)
+	{
+		/* grey out 'main interval', highlight 'filtered interval' */
+		color_dict['whole'] = '#ddd';
+		color_dict['filtered'] = 'steelblue';
+
+		intervals_full.unshift( [ 'x', 'whole', 'filtered' ] );
+	}
+	else
+	{
+		intervals_full.unshift( [ 'x', 'whole' ] );
+	}
+
+	/* TODO, put mark of current packet (m_webshark_current_frame) */
+
+	var chart = c3.generate({
+		bindto: this.elem,
+		size: { width: 620, height: 100 },
+		legend: { position: 'inset', hide: true },
+
+		axis: {
+			x: {
+				tick: {
+					fit: false
+				}
+			},
+			y: {
+				max: max_value_hack,
+				tick: {
+					format: d3.format(".0s")
+				}
+			}
+		},
+
+		data: {
+			x: 'x',
+			rows: intervals_full,
+			colors: color_dict,
+			type: 'area-spline'
+		},
+
+		interaction: {
+			enabled: false
+		}
+	});
+
+	this.descr_elem.innerHTML = this.create_description();
+};
+
+WSInterval.prototype.create_description = function()
+{
+	var descr = "";
+
+	if (this.interval_filter && this.interval)
+	{
+		var perc100 = Math.floor(100 * (this.interval_filter['frames'] / this.interval['frames']) * 100);
+
+		descr = 'Displaying ' + this.interval_filter['frames'] + ' out of ' + this.interval['frames'] + ' frames (' + (perc100 / 100) + '%)';
+	}
+	else if (this.interval)
+	{
+		descr = 'Displaying all ' + this.interval['frames'] + ' frames';
+	}
+	else if (this.interval_filter)
+	{
+		descr = 'Displaying filtered ' + this.interval_filter['frames'] + ' frames';
+	}
+
+	return descr;
+};
+
+exports.WSInterval = WSInterval;
+
+}, {}],6: [function(require,module,exports,global){
 /* webshark-hexdump.js
  *
  * Copyright (C) 2016 Jakub Zawadzki
@@ -2106,185 +2289,6 @@ WSHexdump.prototype.render_hexdump = function()
 
 exports.WSHexdump = WSHexdump;
 exports.xtoa = xtoa;
-
-}, {}],6: [function(require,module,exports,global){
-/* webshark-interval.js
- *
- * Copyright (C) 2016 Jakub Zawadzki
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
- */
-
-function WSInterval(opts)
-{
-	this.mode = opts['mode'];
-	this.interval_count = opts['width'];
-
-	this.elem = document.getElementById(opts['contentId']);
-	this.descr_elem = document.getElementById(opts['descrId']);
-
-	this.interval = null;
-	this.interval_filter = null;
-	this.scale = 1;
-}
-
-WSInterval.prototype.setDuration = function(duration)
-{
-	var scale;
-
-	scale = Math.round(duration / this.interval_count);
-	if (scale < 1)
-		scale = 1;
-
-	this.scale = scale;
-};
-
-WSInterval.prototype.setResult = function(filter, data)
-{
-	if (filter)
-	{
-		this.interval_filter = data;
-	}
-	else
-	{
-		this.interval = data;
-		this.interval_filter = null; /* render only main */
-	}
-
-	this.render_interval();
-};
-
-WSInterval.prototype.getScale = function()
-{
-	return this.scale;
-};
-
-WSInterval.prototype.render_interval = function()
-{
-	var intervals_data   = this.interval ? this.interval['intervals'] : null;
-	var intervals_filter = this.interval_filter ? this.interval_filter['intervals'] : null;
-	var intervals_full = [ ];
-
-	var last_one  = this.interval ? this.interval['last'] : this.interval_filter['last'];
-	var color_dict = { whole: 'steelblue' };
-	var max_value_hack = 10; /* XXX, workaround, to not display mili's */
-
-	var count_idx =
-		(this.mode == "bps") ? 2 :
-		(this.mode == "fps") ? 1 :
-		-1;
-
-	if (count_idx == -1)
-		return;
-
-	for (var i = 0; i <= last_one; i++)
-		intervals_full[i] = [ (i * this.scale), 0, 0 ];
-
-	if (intervals_data)
-	{
-		for (var i = 0; i < intervals_data.length; i++)
-		{
-			var idx = intervals_data[i][0];
-			intervals_full[idx][1] += intervals_data[i][count_idx];
-			if (intervals_full[idx][1] > 10) max_value_hack = undefined;
-		}
-	}
-
-	if (intervals_filter)
-	{
-		for (var i = 0; i < intervals_filter.length; i++)
-		{
-			var idx = intervals_filter[i][0];
-			intervals_full[idx][2] += intervals_filter[i][count_idx];
-			if (intervals_full[idx][2] > 10) max_value_hack = undefined;
-		}
-	}
-
-
-	if (intervals_filter)
-	{
-		/* grey out 'main interval', highlight 'filtered interval' */
-		color_dict['whole'] = '#ddd';
-		color_dict['filtered'] = 'steelblue';
-
-		intervals_full.unshift( [ 'x', 'whole', 'filtered' ] );
-	}
-	else
-	{
-		intervals_full.unshift( [ 'x', 'whole' ] );
-	}
-
-	/* TODO, put mark of current packet (m_webshark_current_frame) */
-
-	var chart = c3.generate({
-		bindto: this.elem,
-		size: { width: 620, height: 100 },
-		legend: { position: 'inset', hide: true },
-
-		axis: {
-			x: {
-				tick: {
-					fit: false
-				}
-			},
-			y: {
-				max: max_value_hack,
-				tick: {
-					format: d3.format(".0s")
-				}
-			}
-		},
-
-		data: {
-			x: 'x',
-			rows: intervals_full,
-			colors: color_dict,
-			type: 'area-spline'
-		},
-
-		interaction: {
-			enabled: false
-		}
-	});
-
-	this.descr_elem.innerHTML = this.create_description();
-};
-
-WSInterval.prototype.create_description = function()
-{
-	var descr = "";
-
-	if (this.interval_filter && this.interval)
-	{
-		var perc100 = Math.floor(100 * (this.interval_filter['frames'] / this.interval['frames']) * 100);
-
-		descr = 'Displaying ' + this.interval_filter['frames'] + ' out of ' + this.interval['frames'] + ' frames (' + (perc100 / 100) + '%)';
-	}
-	else if (this.interval)
-	{
-		descr = 'Displaying all ' + this.interval['frames'] + ' frames';
-	}
-	else if (this.interval_filter)
-	{
-		descr = 'Displaying filtered ' + this.interval_filter['frames'] + ' frames';
-	}
-
-	return descr;
-};
-
-exports.WSInterval = WSInterval;
 
 }, {}],7: [function(require,module,exports,global){
 /* webshark-iograph.js
@@ -2598,7 +2602,7 @@ WSIOGraph.prototype.update = function()
 
 exports.WSIOGraph = WSIOGraph;
 
-}, {"./webshark-display-filter.js":2}],8: [function(require,module,exports,global){
+}, {"./webshark-display-filter.js":3}],8: [function(require,module,exports,global){
 /* webshark-preferences.js
  *
  * Copyright (C) 2016 Jakub Zawadzki
@@ -4057,7 +4061,7 @@ function webshark_load_tap(taps)
 
 exports.webshark_load_tap = webshark_load_tap;
 
-}, {"./webshark-hexdump.js":5,"./webshark-rtp-player.js":13,"./webshark-symbols.js":10,"./webshark-tap-flow.js":14}],10: [function(require,module,exports,global){
+}, {"./webshark-hexdump.js":6,"./webshark-rtp-player.js":13,"./webshark-symbols.js":10,"./webshark-tap-flow.js":14}],10: [function(require,module,exports,global){
 /* webshark-symbols.js
  *
  * Copyright (C) 2016 Jakub Zawadzki

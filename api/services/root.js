@@ -4,6 +4,7 @@ import fetch from "node-fetch";
 import sharkd_dict from "../custom_module/sharkd_dict.js";
 import fastify_static from "@fastify/static";
 import path from 'path';
+import moment from 'moment-timezone';
 
 const __dirname = path.resolve();
 const CAPTURES_PATH = process.env.CAPTURES_PATH || `${__dirname.replace('/api', '')}/captures/`;
@@ -47,10 +48,11 @@ const main = function (fastify, opts, next) {
               results.files.push({
                 name: pcap_file,
                 size: pcap_stats.size,
+                desc: moment(pcap_stats.ctimeMs).format('YYYY.MM.DD HH:mm:ss'),
                 status: { online: true, directory: false, },
               });
             } else {
-              results.files.push({ name: pcap_file, size: pcap_stats.size });
+              results.files.push({ name: pcap_file, desc: moment(pcap_stats.ctimeMs).format('YYYY.MM.DD HH:mm:ss'), size: pcap_stats.size });
             }
           } else {
             results.files.push({
@@ -120,10 +122,8 @@ const main = function (fastify, opts, next) {
           let file = fs.statSync(`${CAPTURES_PATH}${request.query.capture}`);
           let body = JSON.parse(data)
 
-          body.forEach(r => {
-            r.created_at = file.ctimeMs
-          });
-          // body.created_at = file.ctimeMs
+          body.forEach(r => { r.created_at = file.ctimeMs });
+          
           return reply.send(JSON.stringify(body));
         }
         reply.send(data);
