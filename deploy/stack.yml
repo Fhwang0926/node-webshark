@@ -1,0 +1,10 @@
+version: '3.3'
+services:
+  webshark:
+    image: harbor.donghwa.dev:4443/seo/webshark_test
+    container_name: webshark
+    ports:
+      - "8085:8085"
+    volumes:
+      - /data/pcap:/captures
+
